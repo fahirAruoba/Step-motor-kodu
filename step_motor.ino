@@ -1,72 +1,47 @@
- 
-int pos = 0;
-#include <Servo.h>  /* Servo kutuphanesi projeye dahil edildi */
-Servo servoNesnesi;  /* servo motor nesnesi yaratildi */
 
 
-int isikSensoru = A0;
-
-int sensorDeger = 0;
 
 
-void setup() {
- servoNesnesi.attach(11);   
-  Serial.begin(4800);
+#include <dht.h>
+
+dht DHT;
+
+#define DHT11_PIN 7
+
+#include <Stepper.h>
+
+#define STEPS 100
+
+Stepper stepper(STEPS, 8, 9, 10, 11);
+
+void setup(){
+  Serial.begin(9600);
+    stepper.setSpeed(30);
 
 }
 
-void loop() {
+void loop()
+{
+  int chk = DHT.read11(DHT11_PIN);
   
-int yenideger = analogRead(isikSensoru);
-int GelenDeger = map(yenideger, 0, 1023,0,50);
-delay(30);
- 
- 
 
-   Serial.println(GelenDeger);
-Serial.print(" ");
-Serial.print(" ");
-Serial.print(" ");
-
- 
-
-if(GelenDeger > 10){
-cardakAc();
-while(GelenDeger>10){
-//servo kodu BURAYA
-delay(30);
-int yenideger = analogRead(isikSensoru);
-int GelenDeger = map(yenideger, 0, 1023,0,50);
-
-   Serial.println(GelenDeger);
-Serial.print(" ");
-Serial.print(" ");
-Serial.print(" ");
-
-if(GelenDeger < 10){
-cardakKapa();
-break;
-
+  if(DHT.humidity > 92){
+    
+  stepper.step(-50);
+  delay(1000);
+  stepper.step(50);
+delay(15000);
+  while(DHT.humidity > 92 ){
+    int chk = DHT.read11(DHT11_PIN);
+  Serial.print("Humidity = ");
+  Serial.println(DHT.humidity);
+  delay(1000);
   }
-
- }
- 
+  }
+  else if(DHT.humidity < 92 && DHT.humidity > 0){
+      
+  Serial.print("Humidity = ");
+  Serial.println(DHT.humidity);
+  }
 }
-else if(GelenDeger < 10){
-cardakKapa();
-}
-
-}
-void cardakAc(){
- 
- servoNesnesi.write(50);  
-  delay(10);
-}
-
-void cardakKapa(){
- 
-servoNesnesi.write(10);   /* Motor mili 20. dereceye donuyor */
-  delay(10);
-}
-
 
